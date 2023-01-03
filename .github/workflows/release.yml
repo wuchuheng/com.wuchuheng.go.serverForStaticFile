@@ -1,0 +1,27 @@
+name: Release executable version.
+
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.19.4'
+      - run: go version
+      - name: Compile binary files for each platform.
+        run: make VERSION=${{ github.ref_name}}
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: dist/executable*
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
