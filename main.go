@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -28,10 +30,13 @@ func main() {
 	}
 }
 
+//go:embed assets/*
+var content embed.FS
+
 func runServer(cCtx *cli.Context) error {
 	port := cCtx.Int("port")
-	fs := http.FileServer(http.Dir("./assets"))
-	http.Handle("/", fs)
+	contentStatic, _ := fs.Sub(content, "assets")
+	http.Handle("/", http.FileServer(http.FS(contentStatic)))
 
 	log.Printf("Listening on :%d...", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
